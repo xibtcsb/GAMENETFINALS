@@ -7,7 +7,7 @@ public class BombGameManager : NetworkBehaviour
     [SyncVar] private float timer = 10f;
 
     public float roundDuration = 10f;
-    public GameObject bombEffect; // Optional particle effect for the bomb
+    public GameObject bombEffect;
 
     private void Start()
     {
@@ -54,7 +54,6 @@ public class BombGameManager : NetworkBehaviour
     {
         if (bombHolder != null)
         {
-            // Assign points to other players
             var players = GameObject.FindGameObjectsWithTag("Player");
             foreach (var player in players)
             {
@@ -65,11 +64,10 @@ public class BombGameManager : NetworkBehaviour
             }
         }
 
-        // Check for a winner
         var winner = CheckWinner();
         if (winner != null)
         {
-            RpcAnnounceWinner(winner.GetComponent<NetworkIdentity>().connectionToClient);
+            RpcAnnounceWinner(winner.name);
         }
         else
         {
@@ -92,17 +90,17 @@ public class BombGameManager : NetworkBehaviour
     }
 
     [ClientRpc]
+    private void RpcAnnounceWinner(string winnerName)
+    {
+        Debug.Log($"Game Over! We have a winner: {winnerName}!");
+    }
+
+    [ClientRpc]
     private void RpcShowBombEffect(GameObject holder)
     {
         if (bombEffect != null && holder != null)
         {
             Instantiate(bombEffect, holder.transform.position, Quaternion.identity, holder.transform);
         }
-    }
-
-    [TargetRpc]
-    private void RpcAnnounceWinner(NetworkConnection target)
-    {
-        Debug.Log("Game Over! We have a winner!");
     }
 }
