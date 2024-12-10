@@ -67,7 +67,8 @@ public class Player : NetworkBehaviour
     public Transform playerCamera;
     public float sens;
     public float lookXLimit = 45f;
-    float xRotation;
+    public float xRotation;
+    public bool canMoveCam;
 
     [Header("Movement")]
     public Rigidbody rb;
@@ -89,12 +90,15 @@ public class Player : NetworkBehaviour
         rb = this.GetComponent<Rigidbody>();
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        
+        canMoveCam = true;
     }
 
     private void Update()
     {
         if (!isLocalPlayer) return;
 
+        CursorHandler();
         CamInput();
         MoveInput();
     }
@@ -108,10 +112,30 @@ public class Player : NetworkBehaviour
 
     private void CamInput()
     {
+        if(!canMoveCam)
+            return;
+
         xRotation += -Input.GetAxis("Mouse Y") * sens;
         xRotation = Mathf.Clamp(xRotation, -lookXLimit, lookXLimit);
         playerCamera.localRotation = Quaternion.Euler(xRotation, 0, 0);
         transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * sens, 0);
+    }
+
+    private void CursorHandler()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftAlt))
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            canMoveCam = false;
+        }
+
+        if (Input.GetKeyUp(KeyCode.LeftAlt))
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            canMoveCam = true;
+        }
     }
 
     private void MoveInput()
