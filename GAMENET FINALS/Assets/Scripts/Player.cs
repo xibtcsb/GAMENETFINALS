@@ -42,12 +42,10 @@ public class Player : NetworkBehaviour
 
     private void HandleMouseLook()
     {
-        // Look up/down
         rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
         rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
         playerCamera.localRotation = Quaternion.Euler(rotationX, 0, 0);
 
-        // Rotate player left/right
         transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookSpeed, 0);
     }
 
