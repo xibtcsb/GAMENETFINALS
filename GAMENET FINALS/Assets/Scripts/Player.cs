@@ -1,5 +1,6 @@
 ﻿using Mirror;
 using UnityEngine;
+using TMPro;
 
 public class Player : NetworkBehaviour
 {
@@ -19,6 +20,22 @@ public class Player : NetworkBehaviour
     public float moveSpeed;
     public Vector3 moveDirection;
 
+    public TMPro.TextMeshProUGUI m_Score;
+    public TMPro.TextMeshProUGUI m_BombTimer;
+    public GameObject _gameManager;
+    public int score;
+    bool m_isInit;
+
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+        InitiateField();
+    }
+
+    public override void OnStartLocalPlayer()
+    {
+        base.OnStartLocalPlayer();
+    }
 
     private void Start()
     {
@@ -33,6 +50,23 @@ public class Player : NetworkBehaviour
         Cursor.visible = false;
         
         canMoveCam = true;
+    }
+
+    [Command]
+    public void InitiateField()
+    {
+        if (!isLocalPlayer)
+            return;
+
+        if (!m_isInit)
+        {
+            NetworkServer.Spawn(Instantiate(_gameManager));
+            GameManager.instance.PlayerHost = this;
+        }
+
+        if (!m_isInit)
+            m_isInit = true;
+
     }
 
     private void Update()
@@ -85,9 +119,11 @@ public class Player : NetworkBehaviour
         forwardInput = Input.GetAxis("Vertical");
     }
 
+  
     private void MovePlayer()
     {
         moveDirection = orientation.forward * forwardInput + orientation.right * rightInput;
         rb.AddForce(moveDirection.normalized * moveSpeed, ForceMode.Force);
-    }
+    }  
+   
 }

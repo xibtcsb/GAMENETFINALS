@@ -5,23 +5,31 @@ using TMPro;
 
 public class GameManager : NetworkBehaviour
 {
-    public TextMeshProUGUI roundTimerText;
-    public TextMeshProUGUI playerScoreText;
+    public static GameManager instance;
     public float roundDuration = 40f;
     private float roundTimeRemaining;
     private int playerCount;
     private bool roundInProgress = false;
-
+    public float _getRoundTimeRemaining { get { return roundTimeRemaining; } }
+    [SyncVar] Player m_PlayerHost;
+    public Player PlayerHost { get => m_PlayerHost; set => m_PlayerHost = value; }
     private static int playerScore = 0;
+
+    private void Awake()
+    {
+        instance = this;
+    }
 
     void Start()
     {
         roundTimeRemaining = roundDuration;
         playerCount = NetworkServer.connections.Count;
+        roundInProgress = true;
     }
 
     void Update()
     {
+        Debug.Log(roundTimeRemaining);
         if (roundInProgress)
         {
             HandleRoundTimer();
@@ -31,7 +39,7 @@ public class GameManager : NetworkBehaviour
     void HandleRoundTimer()
     {
         roundTimeRemaining -= Time.deltaTime;
-        roundTimerText.text = "Time: " + Mathf.Ceil(roundTimeRemaining).ToString();
+        PlayerHost.m_BombTimer.text = "Time: " + Mathf.Ceil(roundTimeRemaining).ToString();
 
         if (roundTimeRemaining <= 0)
         {
@@ -66,8 +74,8 @@ public class GameManager : NetworkBehaviour
             var playerScript = conn.Value.identity.GetComponent<PickUpBomb>();
             if (playerScript != null && playerScript.isPlayerAlive)
             {
-                playerScore += 1;
-                UpdateScoreUI(playerScore);
+                PlayerHost.score += 1;
+                RpcRoundEnd();
                 break;
             }
         }
@@ -104,8 +112,4 @@ public class GameManager : NetworkBehaviour
         return count;
     }
 
-    void UpdateScoreUI(int score)
-    {
-        playerScoreText.text = "Score: " + score;
-    }
 }
